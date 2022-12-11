@@ -1,6 +1,6 @@
-mod operator;
+pub mod operator;
 
-use operator::{Token, Operator, Info};
+use operator::{Info, Operator, Token};
 
 pub fn tokenizer(input: String) -> Result<Vec<Token>, &'static str> {
     let mut tokens = Vec::new();
@@ -13,16 +13,17 @@ pub fn tokenizer(input: String) -> Result<Vec<Token>, &'static str> {
             return Err("Wrong input; only digits and operators (+ - * / ^ ( ))");
         }
 
-        if x == ' ' { continue }
-        
+        if x == ' ' {
+            continue;
+        }
+
         // For numeric characters, add to token
         if "0123456789".contains(x) {
             match number(&mut tokens, token, x, &mut info) {
                 Ok(new_token) => token = new_token,
-                Err(error) => return Err( error),
+                Err(error) => return Err(error),
             }
         }
-
         // For operator character
         else if "+-*/^()".contains(x) {
             match operator(&mut tokens, token, x, &mut info) {
@@ -33,7 +34,7 @@ pub fn tokenizer(input: String) -> Result<Vec<Token>, &'static str> {
     }
     match token {
         Token::Number(_) => tokens.push(token),
-        Token::Operator(Operator::CloseBracket) => {},
+        Token::Operator(Operator::CloseBracket) => {}
         _ => return Err("Error: can't end with operator"),
     }
     if info.bracket_count != 0 {
@@ -42,7 +43,12 @@ pub fn tokenizer(input: String) -> Result<Vec<Token>, &'static str> {
     Ok(tokens)
 }
 
-fn number(tokens: &mut Vec<Token>, token: Token, x: char, info: &mut Info) -> Result<Token, &'static str> {
+fn number(
+    tokens: &mut Vec<Token>,
+    token: Token,
+    x: char,
+    info: &mut Info,
+) -> Result<Token, &'static str> {
     match token {
         Token::Begin => Ok(Token::Number(x as i64 - 48)),
         Token::Number(nbr) => {
@@ -54,22 +60,29 @@ fn number(tokens: &mut Vec<Token>, token: Token, x: char, info: &mut Info) -> Re
         }
         Token::Operator(ref operator) => {
             if operator == &Operator::CloseBracket {
-                Err("Immediate nbr after closing bracket")
+                Err("Error: immediate nbr after close bracket")
             } else if operator == &Operator::Substract {
-                if info.minus_amount % 2 == 0 {
+                if info.minus_amount == 0 {
+                    tokens.push(token);
                     Ok(Token::Number(x as i64 - 48))
                 } else {
+                    info.minus_amount = 0;
                     Ok(Token::Number(-1 * (x as i64 - 48)))
                 }
-            } else { 
+            } else {
                 tokens.push(token);
                 Ok(Token::Number(x as i64 - 48))
             }
-        },
+        }
     }
 }
 
-fn operator(tokens: &mut Vec<Token>, token: Token, x: char, info: &mut Info) -> Result<Token, &'static str> {
+fn operator(
+    tokens: &mut Vec<Token>,
+    token: Token,
+    x: char,
+    info: &mut Info,
+) -> Result<Token, &'static str> {
     let check = match x {
         '-' => Operator::minus_check(token, info),
         '+' | '/' | '*' | '^' => Operator::easy_operators_check(token),
@@ -80,9 +93,11 @@ fn operator(tokens: &mut Vec<Token>, token: Token, x: char, info: &mut Info) -> 
 
     match check {
         Ok(()) => {
-            tokens.push(token);
+            if token != Token::Begin {
+                tokens.push(token);
+            }
             Ok(Operator::create(x))
-        },
+        }
         Err(error) => Err(error),
     }
 }

@@ -47,7 +47,13 @@ impl Operator {
     pub fn easy_operators_check(token: Token) -> Result<(), &'static str> {
         match token {
             Token::Begin => Err("Error: can't start with this operator"),
-            Token::Operator(_) => Err("Error: double operator 1"),
+            Token::Operator(o) => {
+                if o == Operator::CloseBracket {
+                    Ok(())
+                } else {
+                    Err("Error: double operator 1")
+                }
+            }
             Token::Number(_) => Ok(()),
         }
     }
@@ -55,8 +61,7 @@ impl Operator {
     pub fn bracket_check(x: char, info: &mut Info) -> Result<(), &'static str> {
         if x == '(' {
             info.bracket_count += 1;
-        } 
-        if x == ')' {
+        } else if x == ')' {
             if info.bracket_count == 0 {
                 return Err("Error: bracket count");
             }
@@ -69,13 +74,13 @@ impl Operator {
         match token {
             Token::Number(_) => Err("Error: open bracket after number"),
             Token::Operator(o) => {
-                if o == Operator::OpenBracket || o == Operator::CloseBracket {
-                    Self::bracket_check(x, info)
+                if o == Operator::CloseBracket {
+                    Err("Error: open bracket after close bracket")
                 } else {
-                    Ok(())
+                    Self::bracket_check(x, info)
                 }
-            },
-            _ => Ok(())
+            }
+            _ => Self::bracket_check(x, info),
         }
     }
 
@@ -85,40 +90,33 @@ impl Operator {
                 if o == Operator::OpenBracket || o == Operator::CloseBracket {
                     Self::bracket_check(x, info)
                 } else {
-                    Ok(())
+                    Self::bracket_check(x, info)
                 }
             }
-            _ => Ok(()),
+            _ => Self::bracket_check(x, info),
         }
     }
-
 
     pub fn minus_check(token: Token, info: &mut Info) -> Result<(), &'static str> {
         match token {
             Token::Begin => {
                 info.minus_amount += 1;
                 Ok(())
-            },
+            }
             Token::Operator(o) => {
                 if o == Operator::OpenBracket {
                     Err("Error: double operator 2")
                 } else if o == Operator::CloseBracket {
                     Ok(())
                 } else {
+                    if info.minus_amount > 0 {
+                        return Err("Error: too many minusses");
+                    }
                     info.minus_amount += 1;
                     Ok(())
                 }
-            },
+            }
             _ => Ok(()),
         }
     }
 }
-
-
-
-
-
-
-
-
-

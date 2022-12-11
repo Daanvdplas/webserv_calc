@@ -1,10 +1,9 @@
-use std::io;
 use crate::tokenizer::*;
+use std::io;
 
 mod tokenizer;
 
 fn main() {
-
     let mut input = String::new();
     let stdin = io::stdin();
     stdin.read_line(&mut input);
@@ -15,8 +14,7 @@ fn main() {
             //let result = executor(parsed_input);
             //println!("{result}");
             println!("succes");
-
-        },
+        }
         Err(message) => println!("{message}"),
     }
 }
