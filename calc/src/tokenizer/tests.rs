@@ -1,13 +1,12 @@
 #[cfg(test)]
 mod test {
 
-    use crate::tokenizer;
-    use tokenizer::operator::{Operator, Token};
+    use crate::tokenizer::*;
 
     #[test]
     fn simple_tests() {
         assert_eq!(
-            tokenizer(String::from("234 + 4 ^ 3 / 2")),
+            Tokenizer::tokenizer(String::from("234 + 4 ^ 3 / 2")),
             Ok(vec![
                 Token::Number(234),
                 Token::Operator(Operator::Add),
@@ -20,7 +19,7 @@ mod test {
         );
 
         assert_eq!(
-            tokenizer(String::from("234 + 4 ^ 3  / 2     ")),
+            Tokenizer::tokenizer(String::from("234 + 4 ^ 3  / 2     ")),
             Ok(vec![
                 Token::Number(234),
                 Token::Operator(Operator::Add),
@@ -33,7 +32,7 @@ mod test {
         );
 
         assert_eq!(
-            tokenizer(String::from("234+4^3/2")),
+            Tokenizer::tokenizer(String::from("234+4^3/2")),
             Ok(vec![
                 Token::Number(234),
                 Token::Operator(Operator::Add),
@@ -46,7 +45,7 @@ mod test {
         );
 
         assert_eq!(
-            tokenizer(String::from("- 234+-4^3/2")),
+            Tokenizer::tokenizer(String::from("- 234+-4^3/2")),
             Ok(vec![
                 Token::Number(-234),
                 Token::Operator(Operator::Add),
@@ -59,37 +58,37 @@ mod test {
         );
 
         assert_eq!(
-            tokenizer(String::from("-- 234+-4^3/2")),
+            Tokenizer::tokenizer(String::from("-- 234+-4^3/2")),
             Err("Error: too many minusses")
         );
 
         assert_eq!(
-            tokenizer(String::from("234+--4^3/2")),
+            Tokenizer::tokenizer(String::from("234+--4^3/2")),
             Err("Error: too many minusses")
         );
 
         assert_eq!(
-            tokenizer(String::from("234+-+4^3/2")),
-            Err("Error: double operator 1")
+            Tokenizer::tokenizer(String::from("234+-+4^3/2")),
+            Err("Error: found an operator combination which is not allowed")
         );
 
         assert_eq!(
-            tokenizer(String::from("234++4^3/2")),
-            Err("Error: double operator 1")
+            Tokenizer::tokenizer(String::from("234++4^3/2")),
+            Err("Error: found an operator combination which is not allowed")
         );
 
         assert_eq!(
-            tokenizer(String::from("234+4^/3/2")),
-            Err("Error: double operator 1")
+            Tokenizer::tokenizer(String::from("234+4^/3/2")),
+            Err("Error: found an operator combination which is not allowed")
         );
 
         assert_eq!(
-            tokenizer(String::from("*234++4^3/2")),
+            Tokenizer::tokenizer(String::from("*234++4^3/2")),
             Err("Error: can't start with this operator")
         );
 
         assert_eq!(
-            tokenizer(String::from("234+-4^3/2 +")),
+            Tokenizer::tokenizer(String::from("234+-4^3/2 +")),
             Err("Error: can't end with operator")
         );
     }
@@ -97,7 +96,7 @@ mod test {
     #[test]
     fn bracket_tests() {
         assert_eq!(
-            tokenizer(String::from("234 + (323- 1 * 4) / 2")),
+            Tokenizer::tokenizer(String::from("234 + (323- 1 * 4) / 2")),
             Ok(vec![
                 Token::Number(234),
                 Token::Operator(Operator::Add),
@@ -114,7 +113,7 @@ mod test {
         );
 
         assert_eq!(
-            tokenizer(String::from("234 + (323- (1 * 4)) / 2")),
+            Tokenizer::tokenizer(String::from("234 + (323- (1 * 4)) / 2")),
             Ok(vec![
                 Token::Number(234),
                 Token::Operator(Operator::Add),
@@ -133,7 +132,7 @@ mod test {
         );
 
         assert_eq!(
-            tokenizer(String::from("((234 + (323)- 1) * 4) / 2")),
+            Tokenizer::tokenizer(String::from("((234 + (323)- 1) * 4) / 2")),
             Ok(vec![
                 Token::Operator(Operator::OpenBracket),
                 Token::Operator(Operator::OpenBracket),
@@ -154,23 +153,23 @@ mod test {
         );
 
         assert_eq!(
-            tokenizer(String::from("(234 + (323- 1 * 4) / 2")),
+            Tokenizer::tokenizer(String::from("(234 + (323- 1 * 4) / 2")),
             Err("Error: bracket count")
         );
         assert_eq!(
-            tokenizer(String::from("234 + 323- 1 * 4) / 2")),
+            Tokenizer::tokenizer(String::from("234 + 323- 1 * 4) / 2")),
+            Err("Error: too many closing brackets")
+        );
+        assert_eq!(
+            Tokenizer::tokenizer(String::from("234 + (323- 1 * 4 / 2")),
             Err("Error: bracket count")
         );
         assert_eq!(
-            tokenizer(String::from("234 + (323- 1 * 4 / 2")),
-            Err("Error: bracket count")
+            Tokenizer::tokenizer(String::from("(234 + 323- 1 * 4)) / 2")),
+            Err("Error: too many closing brackets")
         );
         assert_eq!(
-            tokenizer(String::from("(234 + 323- 1 * 4)) / 2")),
-            Err("Error: bracket count")
-        );
-        assert_eq!(
-            tokenizer(String::from("(234 + (323- 1 * 4)  2")),
+            Tokenizer::tokenizer(String::from("(234 + (323- 1 * 4)  2")),
             Err("Error: immediate nbr after close bracket")
         );
     }
@@ -178,7 +177,7 @@ mod test {
     #[test]
     fn new_tests() {
         assert_eq!(
-            tokenizer(String::from("(- 234 + (323 ^ (4 - 1) + 2)) * 4")),
+            Tokenizer::tokenizer(String::from("(- 234 + (323 ^ (4 - 1) + 2)) * 4")),
             Ok(vec![
                 Token::Operator(Operator::OpenBracket),
                 Token::Number(-234),

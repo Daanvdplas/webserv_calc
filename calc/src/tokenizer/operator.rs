@@ -1,26 +1,16 @@
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Token {
+    // All the tokens
+    //
+    // Begin token we need for the start
     Begin,
     Operator(Operator),
     Number(i64),
 }
 
-pub struct Info {
-    pub bracket_count: u8,
-    pub minus_amount: u8,
-}
-
-impl Info {
-    pub fn new() -> Info {
-        Info {
-            bracket_count: 0,
-            minus_amount: 0,
-        }
-    }
-}
-
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Operator {
+    // All the operators
     Add,
     Substract,
     Multiply,
@@ -31,6 +21,7 @@ pub enum Operator {
 }
 
 impl Operator {
+    // Create a new operator token
     pub fn create(x: char) -> Token {
         match x {
             '-' => Token::Operator(Operator::Substract),
@@ -44,6 +35,7 @@ impl Operator {
         }
     }
 
+    // Do the checks for +, -, /, *, ^ operators
     pub fn easy_operators_check(token: Token) -> Result<(), &'static str> {
         match token {
             Token::Begin => Err("Error: can't start with this operator"),
@@ -51,40 +43,52 @@ impl Operator {
                 if o == Operator::CloseBracket {
                     Ok(())
                 } else {
-                    Err("Error: double operator 1")
+                    Err("Error: found an operator combination which is not allowed")
                 }
             }
             Token::Number(_) => Ok(()),
         }
     }
 
-    pub fn bracket_check(x: char, info: &mut Info) -> Result<(), &'static str> {
+    // Accounting of opening and closing brackets; each '(' will increase the count
+    // and each ')' will decrease the count. The count can't be lower than 0.
+    pub fn bracket_check(x: char, bracket_count: &mut u8) -> Result<(), &'static str> {
         if x == '(' {
-            info.bracket_count += 1;
+            *bracket_count += 1;
         } else if x == ')' {
-            if info.bracket_count == 0 {
-                return Err("Error: bracket count");
+            if *bracket_count == 0 {
+                return Err("Error: too many closing brackets");
             }
-            info.bracket_count -= 1;
+            *bracket_count -= 1;
         }
         Ok(())
     }
 
-    pub fn open_bracket_check(token: Token, x: char, info: &mut Info) -> Result<(), &'static str> {
+    // Do the checks for an open bracket.
+    pub fn open_bracket_check(
+        token: Token,
+        x: char,
+        bracket_count: &mut u8,
+    ) -> Result<(), &'static str> {
         match token {
             Token::Number(_) => Err("Error: open bracket after number"),
             Token::Operator(o) => {
                 if o == Operator::CloseBracket {
                     Err("Error: open bracket after close bracket")
                 } else {
-                    Self::bracket_check(x, info)
+                    Self::bracket_check(x, bracket_count)
                 }
             }
-            _ => Self::bracket_check(x, info),
+            _ => Self::bracket_check(x, bracket_count),
         }
     }
 
-    pub fn close_bracket_check(token: Token, x: char, info: &mut Info) -> Result<(), &'static str> {
+    // Do the checks for a closing bracket.
+    pub fn close_bracket_check(
+        token: Token,
+        x: char,
+        bracket_count: &mut u8,
+    ) -> Result<(), &'static str> {
         match token {
             Token::Operator(o) => {
                 if o == Operator::Add
@@ -95,14 +99,17 @@ impl Operator {
                 {
                     Err("Error: closing bracket after operator")
                 } else {
-                    Self::bracket_check(x, info)
+                    Self::bracket_check(x, bracket_count)
                 }
             }
-            _ => Self::bracket_check(x, info),
+            _ => Self::bracket_check(x, bracket_count),
         }
     }
 
-    pub fn minus_check(token: Token, info: &mut Info) -> Result<(), &'static str> {
+    // Do the checks for the minus operator. Finding '-' after the operator
+    // (except ')' ) and begin token will turn on the minus flag for a followed
+    // negative number.
+    pub fn minus_check(token: Token, minus_count: &mut bool) -> Result<(), &'static str> {
         match token {
             Token::Operator(o) => {
                 if o == Operator::OpenBracket
@@ -112,15 +119,15 @@ impl Operator {
                     || o == Operator::Divide
                     || o == Operator::Square
                 {
-                    if info.minus_amount > 0 {
+                    if *minus_count == true {
                         return Err("Error: too many minusses");
                     }
-                    info.minus_amount += 1;
+                    *minus_count = true;
                 }
                 Ok(())
             }
             Token::Begin => {
-                info.minus_amount += 1;
+                *minus_count = true;
                 Ok(())
             }
             _ => Ok(()),

@@ -1,7 +1,7 @@
+mod tokenizer;
+
 use crate::tokenizer::*;
 use std::io;
-
-mod tokenizer;
 
 fn main() {
     let mut input = String::new();
@@ -9,7 +9,7 @@ fn main() {
     stdin.read_line(&mut input);
     input.pop();
 
-    match tokenizer(input) {
+    match Tokenizer::tokenizer(input) {
         Ok(tokens) => {
             //let parsed_input = parser(tokens);
             //let result = executor(parsed_input);
