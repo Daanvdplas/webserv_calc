@@ -8,6 +8,7 @@ fn main() {
     let stdin = io::stdin();
     stdin.read_line(&mut input);
     input.pop();
+
     match tokenizer(input) {
         Ok(tokens) => {
             //let parsed_input = parser(tokens);

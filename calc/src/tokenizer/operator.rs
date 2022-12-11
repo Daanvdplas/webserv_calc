@@ -87,8 +87,13 @@ impl Operator {
     pub fn close_bracket_check(token: Token, x: char, info: &mut Info) -> Result<(), &'static str> {
         match token {
             Token::Operator(o) => {
-                if o == Operator::OpenBracket || o == Operator::CloseBracket {
-                    Self::bracket_check(x, info)
+                if o == Operator::Add
+                    || o == Operator::Substract
+                    || o == Operator::Multiply
+                    || o == Operator::Square
+                    || o == Operator::Divide
+                {
+                    Err("Error: closing bracket after operator")
                 } else {
                     Self::bracket_check(x, info)
                 }
@@ -99,22 +104,24 @@ impl Operator {
 
     pub fn minus_check(token: Token, info: &mut Info) -> Result<(), &'static str> {
         match token {
-            Token::Begin => {
-                info.minus_amount += 1;
-                Ok(())
-            }
             Token::Operator(o) => {
-                if o == Operator::OpenBracket {
-                    Err("Error: double operator 2")
-                } else if o == Operator::CloseBracket {
-                    Ok(())
-                } else {
+                if o == Operator::OpenBracket
+                    || o == Operator::Add
+                    || o == Operator::Substract
+                    || o == Operator::Multiply
+                    || o == Operator::Divide
+                    || o == Operator::Square
+                {
                     if info.minus_amount > 0 {
                         return Err("Error: too many minusses");
                     }
                     info.minus_amount += 1;
-                    Ok(())
                 }
+                Ok(())
+            }
+            Token::Begin => {
+                info.minus_amount += 1;
+                Ok(())
             }
             _ => Ok(()),
         }
