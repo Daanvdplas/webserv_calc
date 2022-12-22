@@ -1,0 +1,2 @@
+input: "(8 * 6 ^ 2 - ( 2-3/(2^-4)))"
+tokens: [Operator(OpenBracket), Number(8), Operator(Multiply), Number(6), Operator(Square), Number(2), Operator(Substract), Operator(OpenBracket), Number(2), Operator(Substract), Number(3), Operator(Divide), Operator(OpenBracket), Number(2), Operator(Square), Number(-4), Operator(CloseBracket), Operator(CloseBracket)]

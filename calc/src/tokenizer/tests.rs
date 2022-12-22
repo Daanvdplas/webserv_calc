@@ -9,11 +9,11 @@ mod test {
             Tokenizer::tokenizer(String::from("234 + 4 ^ 3 / 2")),
             Ok(vec![
                 Token::Number(234),
-                Token::Operator(Operator::Add),
+                Token::Operator('+'),
                 Token::Number(4),
-                Token::Operator(Operator::Square),
+                Token::Operator('^'),
                 Token::Number(3),
-                Token::Operator(Operator::Divide),
+                Token::Operator('/'),
                 Token::Number(2)
             ])
         );
@@ -22,11 +22,11 @@ mod test {
             Tokenizer::tokenizer(String::from("234 + 4 ^ 3  / 2     ")),
             Ok(vec![
                 Token::Number(234),
-                Token::Operator(Operator::Add),
+                Token::Operator('+'),
                 Token::Number(4),
-                Token::Operator(Operator::Square),
+                Token::Operator('^'),
                 Token::Number(3),
-                Token::Operator(Operator::Divide),
+                Token::Operator('/'),
                 Token::Number(2)
             ])
         );
@@ -35,11 +35,11 @@ mod test {
             Tokenizer::tokenizer(String::from("234+4^3/2")),
             Ok(vec![
                 Token::Number(234),
-                Token::Operator(Operator::Add),
+                Token::Operator('+'),
                 Token::Number(4),
-                Token::Operator(Operator::Square),
+                Token::Operator('^'),
                 Token::Number(3),
-                Token::Operator(Operator::Divide),
+                Token::Operator('/'),
                 Token::Number(2)
             ])
         );
@@ -48,11 +48,11 @@ mod test {
             Tokenizer::tokenizer(String::from("- 234+-4^3/2")),
             Ok(vec![
                 Token::Number(-234),
-                Token::Operator(Operator::Add),
+                Token::Operator('+'),
                 Token::Number(-4),
-                Token::Operator(Operator::Square),
+                Token::Operator('^'),
                 Token::Number(3),
-                Token::Operator(Operator::Divide),
+                Token::Operator('/'),
                 Token::Number(2)
             ])
         );
@@ -99,15 +99,15 @@ mod test {
             Tokenizer::tokenizer(String::from("234 + (323- 1 * 4) / 2")),
             Ok(vec![
                 Token::Number(234),
-                Token::Operator(Operator::Add),
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('+'),
+                Token::Operator('('),
                 Token::Number(323),
-                Token::Operator(Operator::Substract),
+                Token::Operator('-'),
                 Token::Number(1),
-                Token::Operator(Operator::Multiply),
+                Token::Operator('*'),
                 Token::Number(4),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::Divide),
+                Token::Operator(')'),
+                Token::Operator('/'),
                 Token::Number(2)
             ])
         );
@@ -116,17 +116,17 @@ mod test {
             Tokenizer::tokenizer(String::from("234 + (323- (1 * 4)) / 2")),
             Ok(vec![
                 Token::Number(234),
-                Token::Operator(Operator::Add),
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('+'),
+                Token::Operator('('),
                 Token::Number(323),
-                Token::Operator(Operator::Substract),
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('-'),
+                Token::Operator('('),
                 Token::Number(1),
-                Token::Operator(Operator::Multiply),
+                Token::Operator('*'),
                 Token::Number(4),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::Divide),
+                Token::Operator(')'),
+                Token::Operator(')'),
+                Token::Operator('/'),
                 Token::Number(2)
             ])
         );
@@ -134,20 +134,20 @@ mod test {
         assert_eq!(
             Tokenizer::tokenizer(String::from("((234 + (323)- 1) * 4) / 2")),
             Ok(vec![
-                Token::Operator(Operator::OpenBracket),
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('('),
+                Token::Operator('('),
                 Token::Number(234),
-                Token::Operator(Operator::Add),
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('+'),
+                Token::Operator('('),
                 Token::Number(323),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::Substract),
+                Token::Operator(')'),
+                Token::Operator('-'),
                 Token::Number(1),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::Multiply),
+                Token::Operator(')'),
+                Token::Operator('*'),
                 Token::Number(4),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::Divide),
+                Token::Operator(')'),
+                Token::Operator('/'),
                 Token::Number(2)
             ])
         );
@@ -179,24 +179,29 @@ mod test {
         assert_eq!(
             Tokenizer::tokenizer(String::from("(- 234 + (323 ^ (4 - 1) + 2)) * 4")),
             Ok(vec![
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('('),
                 Token::Number(-234),
-                Token::Operator(Operator::Add),
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('+'),
+                Token::Operator('('),
                 Token::Number(323),
-                Token::Operator(Operator::Square),
-                Token::Operator(Operator::OpenBracket),
+                Token::Operator('^'),
+                Token::Operator('('),
                 Token::Number(4),
-                Token::Operator(Operator::Substract),
+                Token::Operator('-'),
                 Token::Number(1),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::Add),
+                Token::Operator(')'),
+                Token::Operator('+'),
                 Token::Number(2),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::CloseBracket),
-                Token::Operator(Operator::Multiply),
+                Token::Operator(')'),
+                Token::Operator(')'),
+                Token::Operator('*'),
                 Token::Number(4)
             ])
+        );
+
+        assert_eq!(
+            Tokenizer::tokenizer(String::from("500 + - (5)")),
+            Err("Error: found two operators and an open bracket")
         );
     }
 }
